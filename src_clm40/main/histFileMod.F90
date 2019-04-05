@@ -1694,6 +1694,7 @@ contains
     integer :: numl                ! total number of landunits across all processors
     integer :: numg                ! total number of gridcells across all processors
     integer :: numa                ! total number of atm cells across all processors
+    logical :: avoid_pnetcdf       ! whether we should avoid using pnetcdf
     logical :: lhistrest           ! local history restart flag
     type(file_desc_t) :: lnfid     ! local file id
     character(len=  8) :: curdate  ! current date
@@ -1718,6 +1719,17 @@ contains
     ! define output write precsion for tape
 
     ncprec = tape(t)%ncprec
+    
+    ! BUG(wjs, 2014-10-20, bugz 1730) Workaround for
+    ! http://bugs.cgd.ucar.edu/show_bug.cgi?id=1730
+    ! - 1-d hist files have problems with pnetcdf. A better workaround in terms of
+    ! performance is to keep pnetcdf, but set PIO_BUFFER_SIZE_LIMIT=0, but that can't be
+    ! done on a per-file basis.
+    if (.not. tape(t)%dov2xy) then
+       avoid_pnetcdf = .true.
+    else
+       avoid_pnetcdf = .false.
+    end if
 
     ! Create new netCDF file. It will be in define mode
 
@@ -1727,7 +1739,7 @@ contains
                                       trim(locfnh(t))
           call shr_sys_flush(iulog)
        end if
-       call ncd_pio_createfile(lnfid, trim(locfnh(t)))
+       call ncd_pio_createfile(lnfid, trim(locfnh(t)), avoid_pnetcdf=avoid_pnetcdf)
        call ncd_putatt(lnfid, ncd_global, 'title', 'CLM History file information' )
        call ncd_putatt(lnfid, ncd_global, 'comment', &
           "NOTE: None of the variables are weighted by land fraction!" )
@@ -1737,7 +1749,7 @@ contains
                                       trim(locfnhr(t))
           call shr_sys_flush(iulog)
        end if
-       call ncd_pio_createfile(lnfid, trim(locfnhr(t)))
+       call ncd_pio_createfile(lnfid, trim(locfnhr(t)), avoid_pnetcdf=avoid_pnetcdf)
        call ncd_putatt(lnfid, ncd_global, 'title', &
           'CLM Restart History information, required to continue a simulation' )
        call ncd_putatt(lnfid, ncd_global, 'comment', &
@@ -1758,7 +1770,7 @@ contains
     call ncd_putatt(lnfid, ncd_global, 'version' , trim(version))
 
     str = &
-    '$Id$'
+    '$Id: histFileMod.F90 76591 2016-02-03 16:57:18Z jedwards $'
     call ncd_putatt(lnfid, ncd_global, 'revision_id', trim(str))
     call ncd_putatt(lnfid, ncd_global, 'case_title', trim(ctitle))
     call ncd_putatt(lnfid, ncd_global, 'case_id', trim(caseid))
@@ -2211,60 +2223,48 @@ contains
        end if
        if (ldomain%isgrid2d) then
           call ncd_defvar(varname='area', xtype=tape(t)%ncprec, &
-              dim1name='lon', dim2name='lat',&
-              long_name='grid cell areas', units='km^2', ncid=nfid(t), &
-              missing_value=spval, fill_value=spval)
+               dim1name='lon', dim2name='lat',&
+               long_name='grid cell areas', units='km^2', ncid=nfid(t), &
+               missing_value=spval, fill_value=spval)
        else
           call ncd_defvar(varname='area', xtype=tape(t)%ncprec, &
-              dim1name=grlnd, &
-              long_name='grid cell areas', units='km^2', ncid=nfid(t), &
-              missing_value=spval, fill_value=spval)
-       end if
-       if (ldomain%isgrid2d) then
-          call ncd_defvar(varname='topo', xtype=tape(t)%ncprec, &
-              dim1name='lon', dim2name='lat',&
-              long_name='grid cell topography', units='m', ncid=nfid(t), &
-              missing_value=spval, fill_value=spval)
-       else
-          call ncd_defvar(varname='topo', xtype=tape(t)%ncprec, &
-              dim1name=grlnd, &
-              long_name='grid cell topography', units='m', ncid=nfid(t), &
-              missing_value=spval, fill_value=spval)
+               dim1name=grlnd, &
+               long_name='grid cell areas', units='km^2', ncid=nfid(t), &
+               missing_value=spval, fill_value=spval)
        end if
        if (ldomain%isgrid2d) then
           call ncd_defvar(varname='landfrac', xtype=tape(t)%ncprec, &
-              dim1name='lon', dim2name='lat', &
-              long_name='land fraction', ncid=nfid(t), &
-              missing_value=spval, fill_value=spval)
+               dim1name='lon', dim2name='lat', &
+               long_name='land fraction', ncid=nfid(t), &
+               missing_value=spval, fill_value=spval)
        else
           call ncd_defvar(varname='landfrac', xtype=tape(t)%ncprec, &
-              dim1name=grlnd, &
-              long_name='land fraction', ncid=nfid(t), &
-              missing_value=spval, fill_value=spval)
+               dim1name=grlnd, &
+               long_name='land fraction', ncid=nfid(t), &
+               missing_value=spval, fill_value=spval)
        end if
        if (ldomain%isgrid2d) then
           call ncd_defvar(varname='landmask', xtype=ncd_int, &
-              dim1name='lon', dim2name='lat', &
-              long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
+               dim1name='lon', dim2name='lat', &
+               long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
+               imissing_value=ispval, ifill_value=ispval)
        else
           call ncd_defvar(varname='landmask', xtype=ncd_int, &
-              dim1name=grlnd, &
-              long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
+               dim1name=grlnd, &
+               long_name='land/ocean mask (0.=ocean and 1.=land)', ncid=nfid(t), &
+               imissing_value=ispval, ifill_value=ispval)
        end if
        if (ldomain%isgrid2d) then
           call ncd_defvar(varname='pftmask' , xtype=ncd_int, &
-              dim1name='lon', dim2name='lat', &
-              long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
+               dim1name='lon', dim2name='lat', &
+               long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
+               imissing_value=ispval, ifill_value=ispval)
        else
           call ncd_defvar(varname='pftmask' , xtype=ncd_int, &
-              dim1name=grlnd, &
-              long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
-              imissing_value=ispval, ifill_value=ispval)
+               dim1name=grlnd, &
+               long_name='pft real/fake mask (0.=fake and 1.=real)', ncid=nfid(t), &
+               imissing_value=ispval, ifill_value=ispval)
        end if
-
     else if (mode == 'write') then
 
        ! Most of this is constant and only needs to be done on tape(t)%ntimes=1
@@ -2287,7 +2287,6 @@ contains
        call ncd_io(varname='landfrac', data=ldomain%frac, dim1name=grlnd, ncid=nfid(t), flag='write')
        call ncd_io(varname='landmask', data=ldomain%mask, dim1name=grlnd, ncid=nfid(t), flag='write')
        call ncd_io(varname='pftmask' , data=ldomain%pftm, dim1name=grlnd, ncid=nfid(t), flag='write')
-
     end if  ! (define/write mode
 
   end subroutine htape_timeconst

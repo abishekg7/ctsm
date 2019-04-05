@@ -4,7 +4,7 @@
 ;
 ;  Erik Kluzek
 ;  Nov/18/2011
-;  $Id$
+;  $Id: checkmapfiles.ncl 46006 2013-04-15 16:04:42Z sacks $
 ;  $HeadURL;
 ;
 

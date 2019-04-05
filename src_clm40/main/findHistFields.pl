@@ -180,8 +180,8 @@ sub XML_Header {
   my $filename    = shift;
 
   print STDERR " Write out header to history fields file to: $outfilename\n";
-  my $svnurl = '$URL$';
-  my $svnid  = '$Id$';
+  my $svnurl = '$URL: https://svn-ccsm-models.cgd.ucar.edu/clm2/branch_tags/sehires_tags/n04/models/lnd/clm/src_clm40/main/findHistFields.pl $';
+  my $svnid  = '$Id: findHistFields.pl 62967 2014-08-25 01:41:36Z mvertens $';
   print $outfh <<"EOF";
 <?xml version="1.0"?>
 

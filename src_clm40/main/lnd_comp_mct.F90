@@ -79,7 +79,7 @@ contains
     type(mct_gsMap),         pointer :: GSMap_lnd    ! Land model MCT GS map
     type(mct_gGrid),         pointer :: dom_l        ! Land model domain
     type(seq_infodata_type), pointer :: infodata     ! CESM driver level info data
-    integer  :: lsize                                ! size of attribute vector
+    integer  :: llsize                                ! size of attribute vector
     integer  :: g,i,j                                ! indices
     integer  :: dtime_sync                           ! coupling time-step from the input synchronization clock
     integer  :: dtime_clm                            ! clm time-step
@@ -219,14 +219,14 @@ contains
     call get_proc_bounds( bounds )
 
     call lnd_SetgsMap_mct( bounds, mpicom_lnd, LNDID, gsMap_lnd ) 	
-    lsize = mct_gsMap_lsize(gsMap_lnd, mpicom_lnd)
+    llsize = mct_gsMap_lsize(gsMap_lnd, mpicom_lnd)
 
-    call lnd_domain_mct( bounds, lsize, gsMap_lnd, dom_l )
+    call lnd_domain_mct( bounds, llsize, gsMap_lnd, dom_l )
 
-    call mct_aVect_init(x2l_l, rList=seq_flds_x2l_fields, lsize=lsize)
+    call mct_aVect_init(x2l_l, rList=seq_flds_x2l_fields, lsize=llsize)
     call mct_aVect_zero(x2l_l)
 
-    call mct_aVect_init(l2x_l, rList=seq_flds_l2x_fields, lsize=lsize)
+    call mct_aVect_init(l2x_l, rList=seq_flds_l2x_fields, lsize=llsize)
     call mct_aVect_zero(l2x_l)
 
     ! Finish initializing clm
@@ -337,7 +337,7 @@ contains
     real(r8)     :: caldayp1             ! clm calday plus dtime offset
     integer      :: shrlogunit,shrloglev ! old values for share log unit and log level
     integer      :: lbnum                ! input to memory diagnostic
-    integer      :: g,i,lsize            ! counters
+    integer      :: g,i,llsize            ! counters
     real(r8)     :: calday               ! calendar day for nstep
     real(r8)     :: declin               ! solar declination angle in radians for nstep
     real(r8)     :: declinp1             ! solar declination angle in radians for nstep+1
@@ -530,7 +530,7 @@ contains
     ! !LOCAL VARIABLES:
     integer,allocatable :: gindex(:)  ! Number the local grid points
     integer :: i, j, n, gi            ! Indices
-    integer :: lsize,gsize            ! GS Map size
+    integer :: llsize,gsize            ! GS Map size
     integer :: ier                    ! Error code
     !---------------------------------------------------------------------------
 
@@ -545,10 +545,10 @@ contains
     do n = bounds%begg, bounds%endg
        gindex(n) = ldecomp%gdc2glo(n)
     end do
-    lsize = bounds%endg - bounds%begg + 1
+    llsize = bounds%endg - bounds%begg + 1
     gsize = ldomain%ni * ldomain%nj
 
-    call mct_gsMap_init( gsMap_lnd, gindex, mpicom_lnd, LNDID, lsize, gsize )
+    call mct_gsMap_init( gsMap_lnd, gindex, mpicom_lnd, LNDID, llsize, gsize )
 
     deallocate(gindex)
 
