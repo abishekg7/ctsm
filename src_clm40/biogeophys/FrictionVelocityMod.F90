@@ -41,7 +41,7 @@ contains
   subroutine FrictionVelocity(lbn, ubn, fn, filtern, &
                               displa, z0m, z0h, z0q, &
                               obu, iter, ur, um, ustar, &
-                              temp1, temp2, temp12m, temp22m, fm, landunit_index)
+                              temp1, temp2, temp12m, temp22m, fm, fh, landunit_index)
 !
 ! !DESCRIPTION:
 ! Calculation of the friction velocity, relation for potential
@@ -77,6 +77,7 @@ contains
    real(r8), intent(out) :: temp2(lbn:ubn)   ! relation for specific humidity profile
    real(r8), intent(out) :: temp22m(lbn:ubn) ! relation for specific humidity profile applied at 2-m
    real(r8), intent(inout) :: fm(lbn:ubn)    ! diagnose 10m wind (DUST only)
+   real(r8), intent(inout) :: fh(lbn:ubn)    ! diagnose 10m wind (DUST only)
 !
 ! !CALLED FROM:
 !
@@ -105,6 +106,14 @@ contains
    real(r8), pointer :: vds(:)         ! dry deposition velocity term (m/s) (for SO4 NH4NO3)
    real(r8), pointer :: u10_clm(:)     ! 10-m wind (m/s)
    real(r8), pointer :: va(:)          ! atmospheric wind speed plus convective velocity (m/s)
+
+   real(r8), pointer :: u10x(:)        ! 10-m wind veloctity, eastward (m/s) BK for WRF
+   real(r8), pointer :: u10y(:)        ! 10-m wind veloctity, northward (m/s)
+   real(r8), pointer :: znt (:)        ! surface roughness length
+   real(r8), pointer :: psim(:)        ! stability profile, momentum
+   real(r8), pointer :: psih(:)        ! stability profile, heat
+   real(r8), pointer :: br  (:)        ! bulk richardson number
+   real(r8), pointer :: hol (:)        ! height over Monin-Obukov length (YL: for wrf)
 !
 !
 ! !OTHER LOCAL VARIABLES:
@@ -120,6 +129,7 @@ contains
    real(r8):: zeta(lbn:ubn)                ! dimensionless height used in Monin-Obukhov theory
    real(r8) :: tmp1,tmp2,tmp3,tmp4         ! Used to diagnose the 10 meter wind
    real(r8) :: fmnew                       ! Used to diagnose the 10 meter wind
+   real(r8) :: fhnew                       ! stability function for heat, similar to fmnew
    real(r8) :: fm10                        ! Used to diagnose the 10 meter wind
    real(r8) :: zeta10                      ! Used to diagnose the 10 meter wind
    real(r8) :: vds_tmp                     ! Temporary for dry deposition velocity
@@ -139,6 +149,14 @@ contains
    va         => pps%va
    fv         => pps%fv
 
+   u10x       => pps%u10x    ! BK for WRF
+   u10y       => pps%u10y   
+   znt        => pps%znt    
+   psim       => pps%psim   
+   psih       => pps%psih   
+   br         => pps%br     
+   hol        => pps%hol
+
    ! Assign local pointers to derived type members (pft or landunit-level)
 
    pfti             => lun%pfti
@@ -155,6 +173,25 @@ contains
    do f = 1, fn
       n = filtern(f)
       g = ngridcell(n)
+
+!     !--- BK for WRF --- to expose un-assigned data ---
+!     if (present(landunit_index)) then
+!        do pp = pfti(n),pftf(n)
+!           u10x(pp) = 1.0e30
+!           u10y(pp) = 1.0e30
+!           znt (pp) = 1.0e30
+!           psim(pp) = 1.0e30
+!           psih(pp) = 1.0e30
+!           br  (pp) = 1.0e30
+!        end do
+!     else
+!        u10x(n) = 1.0e30
+!        u10y(n) = 1.0e30
+!        znt (n) = 1.0e30
+!        psim(n) = 1.0e30
+!        psih(n) = 1.0e30
+!        br  (n) = 1.0e30
+!     end if
 
       ! Wind profile
 
@@ -229,6 +266,7 @@ contains
             end if
           end if
           va(pp) = um(n)
+
         end do
       else
         if (zldis(n)-z0m(n) .le. 10._r8) then
@@ -253,6 +291,7 @@ contains
           end if
         end if
         va(n) = um(n)
+
       end if
 
       ! Temperature profile
@@ -387,13 +426,17 @@ contains
          tmp2 = log((1._r8+tmp1*tmp1)/2._r8)
          tmp3 = log((1._r8+tmp1)/2._r8)
          fmnew = 2._r8*tmp3 + tmp2 - 2._r8*atan(tmp1) + 1.5707963_r8
+         fhnew = 2._r8*tmp2   ! BK see Large & Yeager, 2004, (8e)
       else
          fmnew = -5._r8*min(zeta(n),1._r8)
+         fhnew =  fmnew
       endif
       if (iter == 1) then
          fm(n) = fmnew
+         fh(n) = fhnew
       else
          fm(n) = 0.5_r8 * (fm(n)+fmnew)
+         fh(n) = 0.5_r8 * (fh(n)+fhnew)
       end if
       zeta10 = min(10._r8/obu(n), 1._r8)
       if (zeta(n) == 0._r8) zeta10 = 0._r8
@@ -414,13 +457,29 @@ contains
         do pp = pfti(n),pftf(n)
           u10(pp) = ur(n) - ustar(n)/vkc * (tmp4 - fm(n) + fm10)
           fv(pp)  = ustar(n)
+          !--- BK for WRF ---
+          u10x(pp) = u10(pp) ! just wind speed here, need to convert to wind velocity later
+          u10y(pp) = u10(pp) ! just wind speed here, need to convert to wind velocity later
+          znt (pp) = z0m(n)
+          psim(pp) =  fm(n)
+          psih(pp) =  fh(n)
+          br  (pp) = zeta(n)*(log(zldis(n)/z0h(n))-psih(pp))/(log(zldis(n)/z0m(n))- psim(pp))**2
+          hol (pp) = zeta(n)
         end do 
       else
         u10(n) = ur(n) - ustar(n)/vkc * (tmp4 - fm(n) + fm10)
         fv(n)  = ustar(n)
+        !--- BK for WRF ---
+        u10x(n) = u10(n) ! just wind speed here, need to convert to wind velocity later
+        u10y(n) = u10(n) ! just wind speed here, need to convert to wind velocity later
+        znt (n) = z0m(n)
+        psim(n) =  fm(n)
+        psih(n) =  fh(n)
+        br  (n) = zeta(n)*(log(zldis(n)/z0h(n))-psih(n))/(log(zldis(n)/z0m(n))- psim(n))**2
+        hol (n) = zeta(n)
       end if
 
-   end do
+   end do  ! do f = 1, fn ; n = filtern(f)
 
    end subroutine FrictionVelocity
 

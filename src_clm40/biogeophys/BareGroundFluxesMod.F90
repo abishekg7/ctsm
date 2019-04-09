@@ -175,6 +175,7 @@ contains
     real(r8) :: raih                   ! temporary variable [kg/m2/s]
     real(r8) :: raiw                   ! temporary variable [kg/m2/s]
     real(r8) :: fm(lbp:ubp)            ! needed for BGC only to diagnose 10m wind speed
+    real(r8) :: fh(lbp:ubp)            ! BK for WRF -- needed to compute new fields for WRF
     real(r8) :: z0mg_pft(lbp:ubp)
     real(r8) :: z0hg_pft(lbp:ubp)
     real(r8) :: z0qg_pft(lbp:ubp)
@@ -305,7 +306,7 @@ contains
        call FrictionVelocity(lbp, ubp, fn, filterp, &
                              displa, z0mg_pft, z0hg_pft, z0qg_pft, &
                              obu, iter, ur, um, ustar, &
-                             temp1, temp2, temp12m, temp22m, fm)
+                             temp1, temp2, temp12m, temp22m, fm, fh)
 
        do f = 1, fn
           p = filterp(f)

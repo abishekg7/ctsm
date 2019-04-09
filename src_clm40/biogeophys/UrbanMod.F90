@@ -2673,6 +2673,7 @@ contains
     real(r8) :: zii(lbl:ubl)       ! convective boundary layer height (m)
 
     real(r8) :: fm(lbl:ubl)        ! needed for BGC only to diagnose 10m wind speed
+    real(r8) :: fh(lbl:ubl)        ! BK for WRF -- needed to compute new fields that WRF needs
 
     real(r8) :: wtus(lbc:ubc)      ! sensible heat conductance for urban columns (m/s)
     real(r8) :: wtuq(lbc:ubc)      ! latent heat conductance for urban columns (m/s)
@@ -2947,7 +2948,7 @@ contains
          call FrictionVelocity(lbl, ubl, num_urbanl, filter_urbanl, &
                                z_d_town_loc, z_0_town_loc, z_0_town_loc, z_0_town_loc, &
                                obu, iter, ur, um, ustar, &
-                               temp1, temp2, temp12m, temp22m, fm, landunit_index=.true.)
+                               temp1, temp2, temp12m, temp22m, fm, fh, landunit_index=.true.)
       end if
 
       do fl = 1, num_urbanl

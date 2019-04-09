@@ -38,11 +38,18 @@ module clm_cpl_indices
   integer, public ::index_l2x_Sl_avsdf        ! albedo: diffuse, visible
   integer, public ::index_l2x_Sl_anidf        ! albedo: diffuse, near-ir
   integer, public ::index_l2x_Sl_snowh        ! snow height
-  integer, public ::index_l2x_Sl_u10          ! 10m wind
+  integer, public ::index_l2x_Sl_u10          ! 10m neutral wind speed
   integer, public ::index_l2x_Sl_ddvel        ! dry deposition velocities (optional)
   integer, public ::index_l2x_Sl_fv           ! friction velocity  
   integer, public ::index_l2x_Sl_ram1         ! aerodynamical resistance
   integer, public ::index_l2x_Sl_soilw        ! volumetric soil water
+  integer, public ::index_l2x_Sl_u10x         ! 10 wind velocity, eastward  BK for WRF
+  integer, public ::index_l2x_Sl_u10y         ! 10 wind velocity, northword
+  integer, public ::index_l2x_Sl_znt          ! surface roughness length
+  integer, public ::index_l2x_Sl_psim         ! stability function, momentum
+  integer, public ::index_l2x_Sl_psih         ! stability function, heat
+  integer, public ::index_l2x_Sl_br           ! bulk Richardson number
+  integer, public ::index_l2x_Sl_hol          ! height over Monin-Obukov length  
   integer, public ::index_l2x_Fall_taux       ! wind stress, zonal
   integer, public ::index_l2x_Fall_tauy       ! wind stress, meridional
   integer, public ::index_l2x_Fall_lat        ! latent          heat flux
@@ -186,6 +193,14 @@ contains
     else
        index_l2x_Sl_ddvel = 0
     end if
+
+    index_l2x_Sl_u10x       = mct_avect_indexra(l2x,'Sl_u10x')  ! BK for WRF
+    index_l2x_Sl_u10y       = mct_avect_indexra(l2x,'Sl_u10y')
+    index_l2x_Sl_znt        = mct_avect_indexra(l2x,'Sl_znt' )
+    index_l2x_Sl_psim       = mct_avect_indexra(l2x,'Sl_psim')
+    index_l2x_Sl_psih       = mct_avect_indexra(l2x,'Sl_psih')
+    index_l2x_Sl_br         = mct_avect_indexra(l2x,'Sl_br'  )
+    index_l2x_Sl_hol        = mct_avect_indexra(l2x,'Sl_hol' )  ! YL for WRF
 
     index_l2x_Fall_taux     = mct_avect_indexra(l2x,'Fall_taux')
     index_l2x_Fall_tauy     = mct_avect_indexra(l2x,'Fall_tauy')

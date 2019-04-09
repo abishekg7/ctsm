@@ -848,6 +848,13 @@ contains
     allocate(pps%ftii(beg:end,1:numrad))
     allocate(pps%u10(beg:end))
     allocate(pps%u10_clm(beg:end))
+    allocate(pps%u10x(beg:end))  ! BK for WRF
+    allocate(pps%u10y(beg:end))
+    allocate(pps%znt (beg:end))
+    allocate(pps%psim(beg:end))
+    allocate(pps%psih(beg:end))
+    allocate(pps%br  (beg:end))
+    allocate(pps%hol (beg:end))  ! YL for WRF
     allocate(pps%va(beg:end))
     allocate(pps%fv(beg:end))
     allocate(pps%ram1(beg:end))
@@ -949,6 +956,13 @@ contains
     pps%ftii(beg:end,:numrad) = nan
     pps%u10(beg:end) = nan
     pps%u10_clm(beg:end) = nan
+    pps%u10x(beg:end) = 1.0e30_r8  ! BK for WRF
+    pps%u10y(beg:end) = 1.0e30_r8
+    pps%znt (beg:end) = 1.0e30_r8
+    pps%psim(beg:end) = 1.0e30_r8
+    pps%psih(beg:end) = 1.0e30_r8
+    pps%br  (beg:end) = 1.0e30_r8
+    pps%hol (beg:end) = 1.0e30_r8
     pps%va(beg:end) = nan
     pps%fv(beg:end) = nan
     pps%ram1(beg:end) = nan
@@ -1737,8 +1751,8 @@ contains
     allocate(pmf%taux(beg:end))
     allocate(pmf%tauy(beg:end))
 
-    pmf%taux(beg:end) = nan
-    pmf%tauy(beg:end) = nan
+    pmf%taux(beg:end) = 1.0e30 ! nan    un-set values remain nan's, cause core dump
+    pmf%tauy(beg:end) = 1.0e30 ! nan
 
   end subroutine init_pft_mflux_type
 

@@ -150,6 +150,15 @@ irrig=".false." crop="off" lnd_tuning_mode="clm4_0_CRUv7"
 <finidat hgrid="0.9x1.25" maxpft="17" mask="gx1v6" bgc="cndv" ic_ymd="20000101" ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false." crop="off">lnd/clm2/initdata/clmi.BCN.2000-01-01_0.9x1.25_gx1v6_simyr2000_c100303.nc
 </finidat>
 
+<!-- Initial files for WRF resolutions -->
+
+<finidat hgrid="wus12"    maxpft="17"  mask="wus12" bgc="none" ic_ymd="20030101" ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false." crop="off" >lnd/clm2/initdata/clmi.wus12.init20031001_c110208.nc
+</finidat>
+
+<finidat hgrid="txlw9k"   maxpft="17"  mask="txlw9k" bgc="none" ic_ymd="20100101" ic_tod="0" sim_year="2010" glc_nec="0" irrig=".false." crop="off">lnd/clm2/initdata/clmi.wus12.init20031001_c110208.nc
+</finidat>
+
+
 <!-- Initial files interpolated from native resolution -->
 
 <finidat hgrid="1.9x2.5" maxpft="17" mask="gx1v6" bgc="none" ic_ymd="20000101" ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false." crop="off">lnd/clm2/initdata/clmi.BCN.2000-01-01_1.9x2.5_gx1v6_simyr2000_c100309.nc
@@ -243,6 +252,17 @@ lnd/clm2/surfdata_map/surfdata_48x96_simyr1850_glcmec10_c120927.nc</fsurdat>
 lnd/clm2/surfdata_map/surfdata_0.9x1.25_simyr1850_glcmec10_c120927.nc</fsurdat>
 <fsurdat hgrid="1.9x2.5" sim_year="1850" glc_nec="10" irrig=".false.">
 lnd/clm2/surfdata_map/surfdata_1.9x2.5_simyr1850_glcmec10_c120927.nc</fsurdat>
+
+<!-- for present day simulations with WRF - year 2000 (same file with/without Glacier model) -->
+<fsurdat hgrid="wus12"     sim_year="2000" glc_nec="0"  irrig=".false." crop="off" >   
+lnd/clm2/surfdata/surfdata_0336x0340_20110128.nc</fsurdat>
+<fsurdat hgrid="wus12"     sim_year="2000" glc_nec="10" irrig=".false." crop="off" >   
+lnd/clm2/surfdata/surfdata_0336x0340_20110128.nc</fsurdat>
+<fsurdat hgrid="gom3x"     sim_year="2000" >   
+lnd/clm2/surfdata/surfdata_gom3x_simyr2000_c171201.nc</fsurdat>
+<fsurdat hgrid="txlw9k"    sim_year="2000" >   
+lnd/clm2/surfdata/surfdata_txlw9k_simyr2000_c171211.nc</fsurdat>
+
 
 <!-- for present day simulations - year 2000 -->
 <fsurdat hgrid="360x720cru" sim_year="2000" crop="off">

@@ -354,6 +354,7 @@ contains
    real(r8) :: w                     ! exp(-LSAI)
    real(r8) :: csoilcn               ! interpolated csoilc for less than dense canopies
    real(r8) :: fm(lbp:ubp)           ! needed for BGC only to diagnose 10m wind speed
+   real(r8) :: fh(lbp:ubp)           ! BK for WRF -- needed to compute new fields that WRF needs
    real(r8) :: wtshi                 ! sensible heat resistance for air, grnd and leaf [-]
    real(r8) :: wtsqi                 ! latent heat resistance for air, grnd and leaf [-]
    integer  :: j                     ! soil/snow level index
@@ -772,7 +773,7 @@ contains
       call FrictionVelocity (lbp, ubp, fn, filterp, &
                              displa_loc, z0mv_loc, z0hv_loc, z0qv_loc, &
                              obu, itlef+1, ur, um, ustar, &
-                             temp1, temp2, temp12m, temp22m, fm)
+                             temp1, temp2, temp12m, temp22m, fm, fh)
 
       do f = 1, fn
          p = filterp(f)

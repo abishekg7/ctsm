@@ -175,7 +175,14 @@ type, public :: pft_pstate_type
    real(r8), pointer :: ftid(:,:)               !down diffuse flux below veg per unit dir flx  (numrad)
    real(r8), pointer :: ftii(:,:)               !down diffuse flux below veg per unit dif flx  (numrad)
    real(r8), pointer :: u10(:)                  !10-m wind (m/s) (for dust model)
-   real(r8), pointer :: u10_clm(:)              !10-m wind (m/s)
+   real(r8), pointer :: u10_clm(:)              !10-m wind speed neutral (m/s)   
+   real(r8), pointer :: u10x(:)                 !10-m wind velocity eastward (m/s)  BK for WRF
+   real(r8), pointer :: u10y(:)                 !10-m wind velocity northward (m/s)
+   real(r8), pointer :: znt(:)                  ! surface roughness length
+   real(r8), pointer :: psim(:)                 ! stability function for momentum
+   real(r8), pointer :: psih(:)                 ! stability function for heat
+   real(r8), pointer :: br(:)                   ! bulk richardson number
+   real(r8), pointer :: hol(:)                  ! height over Monin-Obukov length
    real(r8), pointer :: va(:)                   !atmospheric wind speed plus convective velocity (m/s)
    real(r8), pointer :: ram1(:)                 !aerodynamical resistance (s/m)
    real(r8), pointer :: fv(:)                   !friction velocity (m/s) (for dust model)
@@ -626,6 +633,13 @@ type(pft_eflux_type)  :: pef         !pft energy flux
 type, public :: pft_mflux_type
    real(r8),pointer ::  taux(:)           !wind (shear) stress: e-w (kg/m/s**2)
    real(r8),pointer ::  tauy(:)           !wind (shear) stress: n-s (kg/m/s**2)
+   real(r8),pointer ::  u10x(:)           !10-m wind velocity eastward (m/s)  BK for WRF
+   real(r8),pointer ::  u10y(:)           !10-m wind velocity northward (m/s)
+   real(r8),pointer ::   znt(:)           ! surface roughness length
+   real(r8),pointer ::  psim(:)           ! stability function for momentum
+   real(r8),pointer ::  psih(:)           ! stability function for heat
+   real(r8),pointer ::  br  (:)           ! bulk richardson number
+   real(r8),pointer ::  hol (:)           ! height over Monin-Obukov length
 end type pft_mflux_type
 
 type(pft_mflux_type)  :: pmf         !pft momentum flux

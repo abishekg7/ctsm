@@ -239,6 +239,7 @@ contains
     use clm_time_manager   , only : get_nstep, get_step_size  
     use seq_drydep_mod     , only : n_drydep
     use shr_megan_mod      , only : shr_megan_mechcomps_n
+    use shr_sys_mod        , only : shr_sys_flush
     !
     ! !ARGUMENTS:
     implicit none
@@ -253,6 +254,7 @@ contains
     integer  :: nstep ! time step index
     integer  :: dtime ! time step   
     integer  :: num   ! counter
+    real(r8) :: tauMag ! magnitude of wind stress, used to derived wind direction
     !---------------------------------------------------------------------------
 
     ! cesm sign convention is that fluxes are positive downward
@@ -270,11 +272,28 @@ contains
        l2x(index_l2x_Sl_tref,i)     =  clm_l2a%t_ref2m(g)
        l2x(index_l2x_Sl_qref,i)     =  clm_l2a%q_ref2m(g)
        l2x(index_l2x_Sl_u10,i)      =  clm_l2a%u_ref10m(g)
+       !------------------------------------------------
+       ! BK: new fields for WRF 
+       ! assume "u10x" is wind speed and convert it to wind velocity
+       tauMag = sqrt( clm_l2a%taux(g)**2 +clm_l2a%tauy(g)**2 )
+       if (tauMag < 1.0e-6) tauMag = 1.0_r8 ! some error for very small stress (wind)
+       l2x(index_l2x_Sl_u10x,i)     = -clm_l2a%u10x(g)*clm_l2a%taux(g)/tauMag 
+       l2x(index_l2x_Sl_u10y,i)     = -clm_l2a%u10x(g)*clm_l2a%tauy(g)/tauMag 
+       l2x(index_l2x_Sl_znt ,i)     =  clm_l2a%znt (g)
+       l2x(index_l2x_Sl_psim,i)     =  clm_l2a%psim(g)
+       l2x(index_l2x_Sl_psih,i)     =  clm_l2a%psih(g)
+       l2x(index_l2x_Sl_br  ,i)     =  clm_l2a%br  (g)
+       l2x(index_l2x_Sl_hol ,i)     =  clm_l2a%hol (g)  !YL for WRF
+       !------------------------------------------------
        l2x(index_l2x_Fall_taux,i)   = -clm_l2a%taux(g)
        l2x(index_l2x_Fall_tauy,i)   = -clm_l2a%tauy(g)
        l2x(index_l2x_Fall_lat,i)    = -clm_l2a%eflx_lh_tot(g)
        l2x(index_l2x_Fall_sen,i)    = -clm_l2a%eflx_sh_tot(g)
        l2x(index_l2x_Fall_lwup,i)   = -clm_l2a%eflx_lwrad_out(g)
+       if(clm_l2a%eflx_lwrad_out(g).gt.600000.0) then
+          write(iulog,*) 'LND_IMPORT_EXPORT lwrad_out=',clm_l2a%eflx_lwrad_out(g),' g=',g
+          call shr_sys_flush(iulog)
+       end if
        l2x(index_l2x_Fall_evap,i)   = -clm_l2a%qflx_evap_tot(g)
        l2x(index_l2x_Fall_swnet,i)  =  clm_l2a%fsa(g)
        if (index_l2x_Fall_fco2_lnd /= 0) then

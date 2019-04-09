@@ -19,6 +19,7 @@ module clm_atmlnd
   use abortutils  , only : endrun
   use seq_drydep_mod, only : n_drydep, drydep_method, DD_XLND
   use shr_megan_mod,  only : shr_megan_mechcomps_n
+  use shr_sys_mod,  only : shr_sys_flush
 !
 ! !PUBLIC TYPES:
   implicit none
@@ -105,12 +106,19 @@ module clm_atmlnd
      real(r8), pointer :: t_rad(:)        => null() !radiative temperature (Kelvin)
      real(r8), pointer :: t_ref2m(:)      => null() !2m surface air temperature (Kelvin)
      real(r8), pointer :: q_ref2m(:)      => null() !2m surface specific humidity (kg/kg)
-     real(r8), pointer :: u_ref10m(:)     => null() !10m surface wind speed (m/sec)
+     real(r8), pointer :: u_ref10m(:)     => null() !10m surface neutral wind speed (m/sec)
      real(r8), pointer :: h2osno(:)       => null() !snow water (mm H2O)
      real(r8), pointer :: albd(:,:)       => null() !(numrad) surface albedo (direct)
      real(r8), pointer :: albi(:,:)       => null() !(numrad) surface albedo (diffuse)
      real(r8), pointer :: taux(:)         => null() !wind stress: e-w (kg/m/s**2)
      real(r8), pointer :: tauy(:)         => null() !wind stress: n-s (kg/m/s**2)
+     real(r8), pointer :: u10x(:)         => null() !10 m wind velocity, eastward  (m/s) BK for WRF
+     real(r8), pointer :: u10y(:)         => null() !10 m wind velocity, northward (m/s)
+     real(r8), pointer :: znt (:)         => null() ! surface roughness length
+     real(r8), pointer :: psim(:)         => null() ! stability function, momentum
+     real(r8), pointer :: psih(:)         => null() ! stability function, heat
+     real(r8), pointer :: br  (:)         => null() ! bulk Richardson number
+     real(r8), pointer :: hol (:)         => null() ! height over Monin-Obukov length
      real(r8), pointer :: eflx_lh_tot(:)  => null() !total latent HF (W/m**2)  [+ to atm]
      real(r8), pointer :: eflx_sh_tot(:)  => null() !total sensible HF (W/m**2) [+ to atm]
      real(r8), pointer :: eflx_lwrad_out(:) => null() !IR (longwave) radiation (W/m**2)
@@ -282,6 +290,13 @@ end subroutine init_atm2lnd_type
   allocate(l2a%albi(beg:end,1:numrad))
   allocate(l2a%taux(beg:end))
   allocate(l2a%tauy(beg:end))
+  allocate(l2a%u10x(beg:end))  ! BK for WRF, unfortunately "u10" is neutral wind speed
+  allocate(l2a%u10y(beg:end))
+  allocate(l2a%znt (beg:end))
+  allocate(l2a%psim(beg:end))
+  allocate(l2a%psih(beg:end))
+  allocate(l2a%br  (beg:end))
+  allocate(l2a%hol (beg:end))  ! YL for WRF
   allocate(l2a%eflx_lwrad_out(beg:end))
   allocate(l2a%eflx_sh_tot(beg:end))
   allocate(l2a%eflx_lh_tot(beg:end))
@@ -313,6 +328,13 @@ end subroutine init_atm2lnd_type
   l2a%albi(beg:end,1:numrad) = ival
   l2a%taux(beg:end) = ival
   l2a%tauy(beg:end) = ival
+  l2a%u10x(beg:end) = 1.0e30_r8  ! BK for WRF
+  l2a%u10y(beg:end) = 1.0e30_r8
+  l2a%znt (beg:end) = 1.0e30_r8
+  l2a%psim(beg:end) = 1.0e30_r8
+  l2a%psih(beg:end) = 1.0e30_r8
+  l2a%br  (beg:end) = 1.0e30_r8
+  l2a%hol (beg:end) = 1.0e30_r8  ! YL for WRF
   l2a%eflx_lwrad_out(beg:end) = ival
   l2a%eflx_sh_tot(beg:end) = ival
   l2a%eflx_lh_tot(beg:end) = ival
@@ -403,6 +425,11 @@ subroutine clm_map2gcell_minimal()
 
   do g = begg,endg
      clm_l2a%t_rad(g) = sqrt(sqrt(clm_l2a%eflx_lwrad_out(g)/sb))
+     if((clm_l2a%eflx_lwrad_out(g).gt.600000.0).or. &
+        (clm_l2a%eflx_lwrad_out(g).lt.-600000.0)) then
+        write(iulog,*) 'CLM_ATMLND lwrad_out=',clm_l2a%eflx_lwrad_out(g),' at g=', g
+        call shr_sys_flush(iulog)
+     end if
   end do
 
 end subroutine clm_map2gcell_minimal
@@ -464,6 +491,41 @@ subroutine clm_map2gcell()
 
   call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
        pps%u10_clm, clm_l2a%u_ref10m, &
+       p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+  !----  BK: new diagnostic fiels for WRF -----
+
+  !--- here u10x is 10m wind speed, later will convert to wind veloctiy ---
+  call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+       pps%u10    , clm_l2a%u10x    , &
+       p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+! call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+!      pps%u10x   , clm_l2a%u10x    , &
+!      p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+! call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+!      pps%u10y   , clm_l2a%u10y    , &
+!      p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+  call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+       pps%znt    , clm_l2a%znt     , &
+       p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+  call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+       pps%psim   , clm_l2a%psim    , &
+       p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+  call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+       pps%psih   , clm_l2a%psih    , &
+       p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+  call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+       pps%br     , clm_l2a%br      , &
+       p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
+
+  call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
+       pps%hol     , clm_l2a%hol      , &
        p2c_scale_type='unity', c2l_scale_type= 'unity', l2g_scale_type='unity')
 
   call p2g(begp, endp, begc, endc, begl, endl, begg, endg, &
