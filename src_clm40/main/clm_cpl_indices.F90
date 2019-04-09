@@ -159,7 +159,7 @@ contains
     ! clm -> drv
     !-------------------------------------------------------------
 
-    index_l2x_Flrl_rofl     = mct_avect_indexra(l2x,'Flrl_rofliq')
+    index_l2x_Flrl_rofl     = mct_avect_indexra(l2x,'Flrl_rofl')
     index_l2x_Flrl_rofi     = mct_avect_indexra(l2x,'Flrl_rofi')
 
     index_l2x_Sl_t          = mct_avect_indexra(l2x,'Sl_t')
