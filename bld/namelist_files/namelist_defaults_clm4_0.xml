@@ -158,6 +158,9 @@ irrig=".false." crop="off" lnd_tuning_mode="clm4_0_CRUv7"
 <finidat hgrid="txlw9k"   maxpft="17"  mask="txlw9k" bgc="none" ic_ymd="20100101" ic_tod="0" sim_year="2010" glc_nec="0" irrig=".false." crop="off">lnd/clm2/initdata/clmi.wus12.init20031001_c110208.nc
 </finidat>
 
+<finidat hgrid="txlw3k"   maxpft="17"  mask="txlw3k" bgc="none" ic_ymd="20100101" ic_tod="0" sim_year="2010" glc_nec="0" irrig=".false." crop="off">lnd/clm2/initdata/clmi.wus12.init20031001_c110208.nc
+</finidat>
+
 
 <!-- Initial files interpolated from native resolution -->
 
@@ -259,9 +262,12 @@ lnd/clm2/surfdata/surfdata_0336x0340_20110128.nc</fsurdat>
 <fsurdat hgrid="wus12"     sim_year="2000" glc_nec="10" irrig=".false." crop="off" >   
 lnd/clm2/surfdata/surfdata_0336x0340_20110128.nc</fsurdat>
 <fsurdat hgrid="gom3x"     sim_year="2000" >   
-lnd/clm2/surfdata/surfdata_gom3x_simyr2000_c171201.nc</fsurdat>
+<!--lnd/clm2/surfdata/surfdata_gom3x_simyr2000_c171201.nc</fsurdat-->
+lnd/clm2/surfdata/surfdata_gom3x_gom3x_simyr2000_c190416.nc</fsurdat>
 <fsurdat hgrid="txlw9k"    sim_year="2000" >   
-lnd/clm2/surfdata/surfdata_txlw9k_simyr2000_c171211.nc</fsurdat>
+lnd/clm2/surfdata/surfdata_txlw9k_simyr2000_c190709.nc</fsurdat>
+<fsurdat hgrid="txlw3k"    sim_year="2000" >   
+lnd/clm2/surfdata/surfdata_txlw3k_gom3x_simyr2000_c190709.nc</fsurdat>
 
 
 <!-- for present day simulations - year 2000 -->

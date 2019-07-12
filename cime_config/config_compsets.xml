@@ -408,6 +408,13 @@
     <science_support grid="f19_g17"/>
   </compset>
 
+  <compset>
+    <alias>IGOM</alias>
+    <lname>2000_DATM%NYF_CLM40%SP_DICE%SSMI_DOCN%DOM_SROF_SGLC_SWAV</lname>
+    <science_support grid="tx3k_g3x"/>
+    <science_support grid="tx9k_g3x"/>
+  </compset>
+
   
 
 
