@@ -267,7 +267,7 @@ lnd/clm2/surfdata/surfdata_gom3x_gom3x_simyr2000_c190416.nc</fsurdat>
 <fsurdat hgrid="txlw9k"    sim_year="2000" >   
 lnd/clm2/surfdata/surfdata_txlw9k_simyr2000_c190709.nc</fsurdat>
 <fsurdat hgrid="txlw3k"    sim_year="2000" >   
-lnd/clm2/surfdata/surfdata_txlw3k_gom3x_simyr2000_c190709.nc</fsurdat>
+lnd/clm2/surfdata/surfdata_txlw3k_gom3x_simyr2000_c191014.nc</fsurdat>
 
 
 <!-- for present day simulations - year 2000 -->
