@@ -137,7 +137,7 @@ module ncdio_pio
   real(r8), parameter  , public  :: fillvalue = 1.e36_r8     ! fill value for netcdf fields
 
   integer, public :: io_type
-
+  integer, private :: io_format
   type(iosystem_desc_t), pointer, public  :: pio_subsystem
 
   type iodesc_plus_type
@@ -162,13 +162,13 @@ contains
     ! Initial PIO
     !
     ! !USES:
-    use shr_pio_mod     , only : shr_pio_getiosys, shr_pio_getiotype
+    use shr_pio_mod     , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
     use clm_varctl      , only : inst_name
     !-----------------------------------------------------------------------
 
     PIO_subsystem => shr_pio_getiosys(inst_name)
     io_type       =  shr_pio_getiotype(inst_name)
-
+    io_format     =  shr_pio_getioformat(inst_name)
   end subroutine ncd_pio_init
 
   !-----------------------------------------------------------------------
@@ -184,8 +184,8 @@ contains
     !
     ! !LOCAL VARIABLES:
     integer :: ierr
-    !-----------------------------------------------------------------------
 
+    !-----------------------------------------------------------------------
     ierr = pio_openfile(pio_subsystem, file, io_type, fname, mode)
 
     if(ierr/= PIO_NOERR) then
@@ -231,6 +231,7 @@ contains
     logical :: l_avoid_pnetcdf  ! local version of avoid_pnetcdf
     integer :: my_io_type
     integer :: ierr
+
     !-----------------------------------------------------------------------
 
     l_avoid_pnetcdf = .false.
@@ -250,7 +251,7 @@ contains
        end if
     end if
 
-    ierr = pio_createfile(pio_subsystem, file, my_io_type, fname, ior(PIO_CLOBBER,PIO_64BIT_OFFSET))
+    ierr = pio_createfile(pio_subsystem, file, my_io_type, fname, ior(PIO_CLOBBER, io_format))
 
     if(ierr/= PIO_NOERR) then
        call shr_sys_abort( ' ncd_pio_createfile ERROR: Failed to open file to write: '//trim(fname))
@@ -1486,13 +1487,16 @@ contains
        call ncd_getiodesc(ncid, clmlevel, ndims_iod, dims(1:ndims_iod), dids(1:ndims_iod), &
             PIO_INT, iodnum)
 #else
+       if(debug > 1) print *,__FILE__,__LINE__
        call ncd_getiodesc(ncid, clmlevel, ndims_iod, dims(1:ndims_iod), dids(1:ndims_iod), &
             PIO_{TYPE}, iodnum)
 #endif
        iodesc_plus => iodesc_list(iodnum)
        if (present(nt)) then
+          if(debug > 1) print *,__FILE__,__LINE__,nt
           call pio_setframe(ncid, vardesc, int(nt,kind=Pio_Offset_Kind))
        end if
+       if(debug > 1) print *,__FILE__,__LINE__,trim(varname)
 #if ({ITYPE}==TYPELOGICAL)
        allocate( idata(size(data)) )
        where( data )
@@ -1507,6 +1511,7 @@ contains
 #elif ({ITYPE}==TYPEDOUBLE)
        call pio_write_darray(ncid, vardesc, iodesc_plus%iodesc, data, status, fillval=spval)
 #endif
+       if(debug > 1) print *,__FILE__,__LINE__
     else
 
        if (masterproc) then

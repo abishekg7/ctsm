@@ -2893,7 +2893,9 @@ contains
           endif
 
           ! Write time constant history variables
-          call htape_timeconst(t, mode='write')
+          if (tape(t)%ntimes == 1) then
+             call htape_timeconst(t, mode='write')
+          endif
 
           ! Write 3D time constant history variables only to first primary tape
           if ( do_3Dtconst .and. t == 1 .and. tape(t)%ntimes == 1 )then
