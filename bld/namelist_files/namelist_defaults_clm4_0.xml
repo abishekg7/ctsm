@@ -268,7 +268,10 @@ lnd/clm2/surfdata/surfdata_gom3x_gom3x_simyr2000_c190416.nc</fsurdat>
 lnd/clm2/surfdata/surfdata_txlw9k_gom3x_simyr2000_c191121.nc</fsurdat>
 <fsurdat hgrid="txlw3k"    sim_year="2000" >   
 lnd/clm2/surfdata/surfdata_txlw3k_gom3x_simyr2000_c191014.nc</fsurdat>
-
+<fsurdat hgrid="txlw27k"    sim_year="2000" >   
+lnd/clm2/surfdata/surfdata_txlw27k_gom27k_simyr2000_c210706.nc</fsurdat>
+<fsurdat hgrid="gom27k"    sim_year="2000" >
+lnd/clm2/surfdata/surfdata_txlw27k_gom27k_simyr2000_c210706.nc</fsurdat>
 
 <!-- for present day simulations - year 2000 -->
 <fsurdat hgrid="360x720cru" sim_year="2000" crop="off">
